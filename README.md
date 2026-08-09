@@ -4,6 +4,11 @@ A responsive calculator built with **HTML, CSS, and JavaScript**.
 
 This project was created to practice JavaScript fundamentals and build a functional calculator with a clean and responsive interface.
 
+## 🌐 Live Demo
+
+👉 [View Live Site](https://hadiswebpro.github.io/Calculator/)
+
+
 ## ✨ Features
 
 * Basic arithmetic operations

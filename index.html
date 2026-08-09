@@ -232,7 +232,7 @@ button:active{
     top:50%;
     transform:translateY(-50%);
     width:260px;
-    margin-top:91px;
+    margin-top:30px;
     padding:25px;
     border-radius:20px;
     background:#FFF8F0;
@@ -240,8 +240,8 @@ button:active{
     box-shadow:
     inset 5px 5px 12px rgba(180,100,30,.12),
     inset -5px -5px 12px white;
-
-    max-height:180px;
+    
+    height:480px;
     overflow-y:auto;
 }
 
@@ -355,6 +355,10 @@ body.dark .history{
         font-size:21px;
     }
 
+    .calculator{
+        border: 2px solid #8A4300 ;
+    }
+
      .app{
         display:flex;
         flex-direction:column;
@@ -380,6 +384,10 @@ body.dark .history{
 
     h1{
         font-size:27px;
+    }
+    
+    .calculator{
+        border: 2px solid #8A4300 ;
     }
 
     .icon-btn{
@@ -475,6 +483,8 @@ body.dark .history{
 
 <script>
 
+const historyList = document.getElementById("historyList");
+
 const numberSound = new Audio("./sound/number.mp3");
 const operatorSound = new Audio("./sound/operator.mp3");
 const uiSound = new Audio("./sound/ui.mp3");
@@ -486,8 +496,13 @@ const themeBtn = document.getElementById("themeBtn");
 const soundBtn = document.getElementById("soundBtn");
 const display = document.getElementById("display");
 const body = document.body;
-const operatorButtons =document.querySelectorAll(".operator");
-const numbersBtn = document.querySelectorAll("button:not(.operator):not(.delete):not(.clear):not(.icon-btn):not(.equal):not(.dot)");
+
+const operatorButtons = document.querySelectorAll(".operator");
+
+const numbersBtn = document.querySelectorAll(
+    "button:not(.operator):not(.delete):not(.clear):not(.icon-btn):not(.equal):not(.dot)"
+);
+
 const clearBtn = document.querySelector(".clear");
 const deleteBtn = document.querySelector(".delete");
 const equalBtn = document.querySelector(".equal");
@@ -496,177 +511,246 @@ const dotBtn = document.querySelector(".dot");
 let firstNumber = "";
 let secondNumber = "";
 let operator = "";
-let displayValue = "";
 let justCalculated = false;
 let soundEnabled = true;
 
 
-//load dark theme if it has set on dark
 
-if(localStorage.getItem("theme") === "dark"){
+// LOAD THEME
+
+if (localStorage.getItem("theme") === "dark") {
     body.classList.add("dark");
-
 }
-if(localStorage.getItem("themeIcon") === "☀️"){
+
+if (localStorage.getItem("themeIcon") === "☀️") {
     themeBtn.textContent = "☀️";
-
 }
 
-themeBtn.addEventListener("click", function(){
+
+// THEME BUTTON
+
+themeBtn.addEventListener("click", function () {
 
     body.classList.toggle("dark");
 
-    if(body.classList.contains("dark")){
+    if (body.classList.contains("dark")) {
 
         localStorage.setItem("theme", "dark");
-        localStorage.setItem("themeIcon", "☀️")
+        localStorage.setItem("themeIcon", "☀️");
 
-    }else{
+    } else {
 
         localStorage.setItem("theme", "light");
-        localStorage.setItem("themeIcon", "🌙")
+        localStorage.setItem("themeIcon", "🌙");
     }
 
-    themeBtn.textContent = body.classList.contains("dark") ? "☀️" : "🌙";
+    themeBtn.textContent =
+        body.classList.contains("dark") ? "☀️" : "🌙";
+
     playSound(uiSound);
-})
+});
 
 
+operatorButtons.forEach(function (btn) {
 
-//get operator
+    btn.addEventListener("click", function () {
 
-operatorButtons.forEach(function(btn){
-
-    btn.addEventListener("click", function(){
         getOperator(btn.textContent);
 
     });
 
 });
 
-function getOperator(op){
 
-    if(firstNumber === ""){
+function getOperator(op) {
+
+    if (firstNumber === "") {
         return;
     }
-   
-    if(op === "%"){
 
-        if(secondNumber === ""){
-            firstNumber = String(Number(firstNumber) / 100);
+    if (op === "%") {
 
-        }else{
+        if (secondNumber === "") {
+
+            firstNumber = String(
+                Number(firstNumber) / 100
+            );
+
+        } else {
+
             secondNumber = String(
-                Number(firstNumber) * Number(secondNumber) / 100
+                Number(firstNumber) *
+                Number(secondNumber) /
+                100
             );
 
         }
 
-        display.textContent = firstNumber + operator + secondNumber;
-        playSound(operatorSound)
+        display.textContent =
+            firstNumber + operator + secondNumber;
+
+        playSound(operatorSound);
+
         return;
     }
 
-    if(secondNumber === ""){
+
+    if (secondNumber === "") {
+
         operator = op;
 
-    }else{
+    } else {
+
         let result = calculate(
             Number(firstNumber),
             operator,
             Number(secondNumber)
         );
 
+        if (result === "ERROR_DIV_ZERO") {
+
+            display.textContent = "Cannot divide by 0";
+
+            firstNumber = "";
+            secondNumber = "";
+            operator = "";
+
+            playSound(errorSound);
+
+            return;
+        }
+
         firstNumber = String(result);
         secondNumber = "";
         operator = op;
-
     }
 
-    justCalculated = false;
-    display.textContent = firstNumber + operator;
-    playSound(operatorSound);
 
+    justCalculated = false;
+
+    display.textContent =
+        firstNumber + operator;
+
+    playSound(operatorSound);
 }
 
 
-//get numbers
 
-numbersBtn.forEach(function(btn){
 
-    btn.addEventListener("click", function(){
+numbersBtn.forEach(function (btn) {
+
+    btn.addEventListener("click", function () {
+
         getNumbers(btn.textContent);
 
     });
+
 });
 
-function getNumbers(num){
-   
-     if(justCalculated){
+
+function getNumbers(num) {
+
+    if (justCalculated) {
 
         firstNumber = "";
         secondNumber = "";
         operator = "";
+
         justCalculated = false;
     }
 
-     if(operator === ""){
+
+    if (operator === "") {
+
         firstNumber += num;
 
-    }else{
+    } else {
+
         secondNumber += num;
     }
 
-    display.textContent = firstNumber + operator + secondNumber;
-    playSound(numberSound);
 
+    display.textContent =
+        firstNumber + operator + secondNumber;
+
+    playSound(numberSound);
 }
 
 
-//calculate 
+
 
 function calculate(num1, operator, num2) {
 
     let result;
 
+
     if (operator === "+") {
+
         result = num1 + num2;
 
     } else if (operator === "-") {
+
         result = num1 - num2;
 
     } else if (operator === "*") {
+
         result = num1 * num2;
 
-    } else if (operator === "/" ) {
+    } else if (operator === "/") {
 
         if (num2 === 0) {
-            return "ERROR_DIV_ZERO";
-            
-        }
-        result = num1 / num2;
-    }    
 
-    if (result === undefined) {
-        playSound(errorSound)
+            return "ERROR_DIV_ZERO";
+        }
+
+        result = num1 / num2;
+
+    } else {
+
         return "Error";
-        
     }
+
 
     return Number(result.toFixed(8));
 }
 
 
+
+
 equalBtn.addEventListener("click", function(){
 
-    let result = calculate(Number(firstNumber), operator, Number(secondNumber));
+    const num1 = firstNumber;
+    const op = operator;
+    const num2 = secondNumber;
+
+    let result = calculate(
+        Number(firstNumber),
+        operator,
+        Number(secondNumber)
+    );
 
     if(result === "ERROR_DIV_ZERO"){
+
         display.textContent = "Cannot divide by 0";
+        firstNumber = "";
+        secondNumber = "";
+        operator = "";
         playSound(errorSound);
         return;
     }
 
+    if(result === "Error"){
+
+        display.textContent = "Error";
+        firstNumber = "";
+        secondNumber = "";
+        operator = "";
+        playSound(errorSound);
+        return;
+
+    }
+
+    addToHistory(num1, op, num2, result);
     firstNumber = String(result);
     secondNumber = "";
     operator = "";
@@ -677,111 +761,252 @@ equalBtn.addEventListener("click", function(){
 });
 
 
+deleteBtn.addEventListener("click", function () {
 
-deleteBtn.addEventListener("click", function(){
+    if (justCalculated) {
 
-    if(justCalculated){
-        firstNumber = firstNumber.slice(0, -1);
-        display.textContent = firstNumber || "0";
+        firstNumber =
+            firstNumber.slice(0, -1);
+
+        display.textContent =
+            firstNumber || "0";
+
         return;
     }
 
-    if(secondNumber !== ""){
-        secondNumber = secondNumber.slice(0,-1);
 
-    }else if(operator !== ""){
+    if (secondNumber !== "") {
+
+        secondNumber =
+            secondNumber.slice(0, -1);
+
+    } else if (operator !== "") {
+
         operator = "";
 
-    }else{
-        firstNumber = firstNumber.slice(0,-1);
+    } else {
 
+        firstNumber =
+            firstNumber.slice(0, -1);
     }
 
-    display.textContent = firstNumber + operator + secondNumber;
+
+    display.textContent =
+        firstNumber + operator + secondNumber;
+
     playSound(operatorSound);
 });
 
 
 
-clearBtn.addEventListener("click", function(){
-    firstNumber = "";
-    operator = "";
-    secondNumber = "";
-    display.textContent = "0";
-    justCalculated = false;
-    playSound(acSound);
+clearBtn.addEventListener("click", function () {
 
+    firstNumber = "";
+    secondNumber = "";
+    operator = "";
+
+    display.textContent = "0";
+
+    justCalculated = false;
+
+    playSound(acSound);
 });
 
 
-dotBtn.addEventListener("click", function(){
 
-    if(justCalculated){
+
+dotBtn.addEventListener("click", function () {
+
+    if (justCalculated) {
+
         firstNumber = "";
         secondNumber = "";
         operator = "";
+
         justCalculated = false;
     }
 
-    if(operator === ""){
 
-        if(!firstNumber.includes(".")){
+    if (operator === "") {
 
-            if(firstNumber === ""){
+        if (!firstNumber.includes(".")) {
+
+            if (firstNumber === "") {
+
                 firstNumber = "0.";
-            }else{
+
+            } else {
+
                 firstNumber += ".";
             }
-
         }
 
-    }else{
+    } else {
 
-        if(!secondNumber.includes(".")){
+        if (!secondNumber.includes(".")) {
 
-            if(secondNumber === ""){
+            if (secondNumber === "") {
+
                 secondNumber = "0.";
-            }else{
+
+            } else {
+
                 secondNumber += ".";
             }
-
         }
-
     }
 
-    display.textContent = firstNumber + operator + secondNumber;
+
+    display.textContent =
+        firstNumber + operator + secondNumber;
+
     playSound(operatorSound);
 });
 
+
+
+soundBtn.addEventListener("click", function () {
+
+    soundEnabled = !soundEnabled;
+
+
+    if (soundEnabled) {
+
+        soundBtn.textContent = "🔊";
+
+        playSound(uiSound);
+
+    } else {
+
+        soundBtn.textContent = "🔇";
+    }
+
+});
 
 
 //sound
 
-soundBtn.addEventListener("click", function(){
+function playSound(sound) {
 
-    soundEnabled = !soundEnabled;
-
-    if(soundEnabled){
-        soundBtn.textContent = "🔊";
-        playSound(uiSound);
-
-    }else{
-        soundBtn.textContent = "🔇";
-
-    }
-
-});
-
-
-function playSound(sound){
-
-    if(!soundEnabled){
+    if (!soundEnabled) {
         return;
     }
 
     sound.currentTime = 0;
-    sound.play().catch(function(error){ console.log("Sound error:", error);});
+
+    sound.play().catch(function (error) {
+
+        console.log("Sound error:", error);
+
+    });
 }
+
+
+// history
+
+function addToHistory(num1, operator, num2, result){
+
+    let history = JSON.parse(localStorage.getItem("history")) || [];
+
+    const newHistory = {
+        num1: num1,
+        operator: operator,
+        num2: num2,
+        result: result
+    };
+
+    history.unshift(newHistory);
+
+    history = history.slice(0, 12);
+
+    localStorage.setItem(
+        "history",
+        JSON.stringify(history)
+    );
+
+    showHistory();
+}
+
+
+// SHOW HISTORY
+
+function showHistory(){
+
+    historyList.innerHTML = "";
+
+    const history = JSON.parse(localStorage.getItem("history")) || [];
+
+    history.forEach(function(item){
+
+        const historyItem = document.createElement("div");
+        historyItem.textContent =`${item.num1} ${item.operator} ${item.num2} = ${item.result}`;
+        historyList.appendChild(historyItem);
+
+    });
+}
+
+showHistory();
+
+
+//keyboard
+
+document.addEventListener("keydown", function(event){
+
+    const key = event.key;
+
+    if(key >= "0" && key <= "9"){
+        getNumbers(key);
+        return;
+    }
+
+    if(key === "."){
+        dotBtn.click();
+        return;
+    }
+
+
+    if(key === "+"){
+        getOperator("+");
+        return;
+    }
+
+    if(key === "-"){
+        getOperator("-");
+        return;
+    }
+
+    if(key === "*"){
+        getOperator("*");
+        return;
+    }
+
+    if(key === "/"){
+        getOperator("/");
+        return;
+    }
+
+    if(key === "%"){
+        getOperator("%");
+        return;
+    }
+
+    if(key === "Enter" || key === "="){
+        equalBtn.click();
+        return;
+    }
+
+
+    if(key === "Backspace"){
+        deleteBtn.click();
+        return;
+    }
+
+    if(key === "Escape"){
+        clearBtn.click();
+        return;
+    }
+
+});
 
 </script>
 
